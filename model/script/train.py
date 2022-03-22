@@ -7,10 +7,10 @@ def main():
     image = "amazon-sagemaker-sandbox-model"
     dummy_role = "arn:aws:iam::111111111111:role/service-role/AmazonSageMaker-ExecutionRole-20200101T000001"
     inputs = {
-        "train": "file://./data/train",
-        "test": "file://./data/test",
+        "train": "file://./data/input",
+        "test": "file://./data/input",
     }
-    output_path="file://./output/train"
+    output_path = "file://./data/output"
 
     estimator = Estimator(
         image_uri=image,
