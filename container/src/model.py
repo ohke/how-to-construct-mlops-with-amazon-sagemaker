@@ -34,6 +34,7 @@ class Net(nn.Module):
         output = F.log_softmax(x, dim=1)
         return output
 
+
 def train(args, model, device, train_loader, optimizer, epoch):
     model.train()
     for batch_idx, (data, target) in enumerate(train_loader):
@@ -87,7 +88,7 @@ def test(model, device, test_loader):
 
 def main():
     # Training settings
-    parser = argparse.ArgumentParser(description="PyTorch MNIST Example")
+    parser = argparse.ArgumentParser(description="Train PyTorch MNIST Example")
     parser.add_argument(
         "--batch-size",
         type=int,
