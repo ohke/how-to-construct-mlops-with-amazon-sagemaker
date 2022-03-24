@@ -1,5 +1,4 @@
 from sagemaker.estimator import Estimator
-from sagemaker.local import LocalSession
 
 
 def main():
@@ -8,7 +7,7 @@ def main():
     image = "amazon-sagemaker-sandbox-model"
     dummy_role = "arn:aws:iam::111111111111:role/service-role/AmazonSageMaker-ExecutionRole-20200101T000001"
 
-    inputs = {"training": "file://./data/input"}
+    inputs = {"train": "file://./data/input"}
     output_path = "file://./data/output"
 
     estimator = Estimator(

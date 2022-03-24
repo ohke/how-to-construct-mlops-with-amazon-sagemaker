@@ -603,6 +603,20 @@ scipy = ["scipy (==1.5.4)"]
 test = ["urllib3 (==1.26.8)", "docker-compose (==1.29.2)", "docker (>=5.0.0,<5.1.0)", "PyYAML (==5.4.1)", "scipy (==1.5.4)", "tox (==3.24.5)", "flake8 (==4.0.1)", "pytest (==6.0.2)", "pytest-cov (==3.0.0)", "pytest-rerunfailures (==10.2)", "pytest-timeout (==2.1.0)", "pytest-xdist (==2.4.0)", "coverage (>=5.2,<6.2)", "mock (==4.0.3)", "contextlib2 (==21.6.0)", "awslogs (==0.14.0)", "black (==22.1.0)", "stopit (==1.1.2)", "apache-airflow (==2.2.3)", "apache-airflow-providers-amazon (==3.0.0)", "attrs (==20.3.0)", "fabric (==2.6.0)", "requests (==2.27.1)", "sagemaker-experiments (==0.1.35)"]
 
 [[package]]
+name = "sagemaker-experiments"
+version = "0.1.35"
+description = "Open source library for Experiment Tracking in SageMaker Jobs and Notebooks"
+category = "dev"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+boto3 = ">=1.16.27"
+
+[package.extras]
+test = ["tox (==3.13.1)", "flake8", "pytest (==4.4.1)", "pytest-cov", "pytest-coverage", "pytest-rerunfailures", "pytest-xdist", "docker", "pandas", "sklearn"]
+
+[[package]]
 name = "six"
 version = "1.16.0"
 description = "Python 2 and 3 compatibility utilities"
@@ -710,7 +724,7 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "58796896c872e702c13274750e3ef17c3986ce861159b27e0c98056a539076dc"
+content-hash = "278d7b8106d0e02bbe09872a1f2c9a1898df5bdf3c4917e4e6c35b24b615286a"
 
 [metadata.files]
 attrs = [
@@ -1166,6 +1180,9 @@ s3transfer = [
 ]
 sagemaker = [
     {file = "sagemaker-2.80.0.tar.gz", hash = "sha256:9b7f2cc1e329260265a8f0cef706e4b40ebf4c08829937ca23bfbab151acbc0f"},
+]
+sagemaker-experiments = [
+    {file = "sagemaker_experiments-0.1.35-py3-none-any.whl", hash = "sha256:d4a6352895c700d9e30a7d97767b84304f5c3eb6f71513c584041a7e749540a7"},
 ]
 six = [
     {file = "six-1.16.0-py2.py3-none-any.whl", hash = "sha256:8abb2f1d86890a2dfb989f9a77cfcfd3e47c2a354b01111771326f8aa26e0254"},
