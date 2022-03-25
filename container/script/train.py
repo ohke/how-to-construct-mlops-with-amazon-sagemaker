@@ -10,8 +10,8 @@ from sagemaker.debugger import (
 from sagemaker.estimator import Estimator
 from sagemaker.inputs import TrainingInput
 from smexperiments.experiment import Experiment
-from smexperiments.tracker import Tracker
 from smexperiments.trial import Trial
+from smexperiments.trial_component import TrialComponent
 
 
 def main():
@@ -21,6 +21,7 @@ def main():
     parser.add_argument("--image-uri", type=str, required=True)
     parser.add_argument("--role", type=str, required=True)
     parser.add_argument("--experiment-name", type=str, default="mnist")
+    parser.add_argument("--trial-suffix", type=str, default=None)
     parser.add_argument("--input-s3-uri", type=str, required=True)
     parser.add_argument("--output-s3-uri", type=str, default=None)
     parser.add_argument(
@@ -36,7 +37,10 @@ def main():
     parser.add_argument("--lr", type=float, default=1.0)
     args = parser.parse_args()
 
-    suffix = datetime.strftime(datetime.now(), "%Y%m%d%H%M%S")
+    if args.trial_suffix:
+        suffix = args.trial_suffix
+    else:
+        suffix = datetime.strftime(datetime.now(), "%Y%m%d%H%M%S")
 
     try:
         experiment = Experiment.load(experiment_name=args.experiment_name)
@@ -46,19 +50,14 @@ def main():
         )
 
     trial_name = f"{experiment.experiment_name}-{suffix}"
-    trial_component_name = f"{trial_name}-train"
+    try:
+        trial = Trial.load(trial_name=trial_name)
+    except:
+        trial = Trial.create(trial_name=trial_name, experiment_name=experiment.experiment_name)
 
-    tracker = Tracker.create(display_name=trial_component_name)
-    tracker.log_parameters(
-        {
-            "use_spot_instances": args.use_spot_instances,
-        }
-    )
-
-    trial = Trial.create(
-        trial_name=trial_name, experiment_name=experiment.experiment_name
-    )
-    trial.add_trial_component(tracker.trial_component)
+    trial_component_name = f"{trial_name}-train-{datetime.strftime(datetime.now(), '%Y%m%d%H%M%S')}"
+    trial_component = TrialComponent.create(trial_component_name=trial_component_name)
+    trial.add_trial_component(trial_component)
 
     experiment_config = {
         "ExperimentName": experiment.experiment_name,

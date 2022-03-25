@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -ex
+
 # This script shows how to build the Docker image and push it to ECR to be ready for use
 # by SageMaker.
 
