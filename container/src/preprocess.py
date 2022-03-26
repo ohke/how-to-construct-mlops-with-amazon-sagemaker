@@ -5,6 +5,16 @@ from torchvision import datasets
 
 
 def main(output_path: str):
+    parser = argparse.ArgumentParser(description="Preprocess MNIST Example")
+    parser.add_argument(
+        "--output-path",
+        type=str,
+        default="./data/original",
+    )
+    args = parser.parse_args()
+
+    output_path = args.output_path
+
     os.makedirs(output_path, exist_ok=True)
 
     datasets.MNIST(output_path, download=True)
@@ -14,12 +24,4 @@ def main(output_path: str):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Preprocess MNIST Example")
-    parser.add_argument(
-        "--output-path",
-        type=str,
-        default="./data/original",
-    )
-    args = parser.parse_args()
-
-    main(args.output_path)
+    main()

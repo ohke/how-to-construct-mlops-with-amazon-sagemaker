@@ -31,7 +31,7 @@ def main():
         experiment = Experiment.create(
             experiment_name=args.experiment_name, description="MNIST experiment"
         )
-    
+
     trial_name = f"{experiment.experiment_name}-{suffix}"
     try:
         trial = Trial.load(trial_name=trial_name)
@@ -40,7 +40,9 @@ def main():
             trial_name=trial_name, experiment_name=experiment.experiment_name
         )
 
-    trial_component_name = f"{trial_name}-preprocess-{datetime.strftime(datetime.now(), '%Y%m%d%H%M%S')}"
+    trial_component_name = (
+        f"{trial_name}-preprocess-{datetime.strftime(datetime.now(), '%Y%m%d%H%M%S')}"
+    )
     trial_component = TrialComponent.create(trial_component_name=trial_component_name)
     trial.add_trial_component(trial_component)
 

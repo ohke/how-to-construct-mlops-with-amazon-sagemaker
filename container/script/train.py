@@ -53,9 +53,13 @@ def main():
     try:
         trial = Trial.load(trial_name=trial_name)
     except:
-        trial = Trial.create(trial_name=trial_name, experiment_name=experiment.experiment_name)
+        trial = Trial.create(
+            trial_name=trial_name, experiment_name=experiment.experiment_name
+        )
 
-    trial_component_name = f"{trial_name}-train-{datetime.strftime(datetime.now(), '%Y%m%d%H%M%S')}"
+    trial_component_name = (
+        f"{trial_name}-train-{datetime.strftime(datetime.now(), '%Y%m%d%H%M%S')}"
+    )
     trial_component = TrialComponent.create(trial_component_name=trial_component_name)
     trial.add_trial_component(trial_component)
 
