@@ -10,9 +10,6 @@ set -ex
 image=$1
 image=${image:-amazon-sagemaker-sandbox-model}
 
-chmod +x src/train
-chmod +x src/serve
-
 # Get the account number associated with the current IAM credentials
 account=$(aws sts get-caller-identity --query Account --output text)
 

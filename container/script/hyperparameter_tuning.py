@@ -24,8 +24,6 @@ from script import ExperimentSetting
     default="ml.c5.xlarge",
 )
 @click.option("--use-spot-instances", is_flag=True, default=False)
-@click.option("--epochs", default=2)
-@click.option("--batch-size", default=64)
 def main(
     image_uri: str,
     role: str,
@@ -55,8 +53,8 @@ def main(
         instance_count=1,
         use_spot_instances=use_spot_instances,
         hyperparameters={
-            "epochs": epochs,
-            "batch_size": batch_size,
+            "epochs": 2,
+            "batch_size": 64,
         },
         metric_definitions=metric_definitions,
     )

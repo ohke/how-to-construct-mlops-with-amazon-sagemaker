@@ -11,11 +11,14 @@ RUN poetry config virtualenvs.create false && \
     poetry install --no-dev && \
     rm -rf ~/.cache/pypoetry
 
-
 COPY src /opt/program
+
+WORKDIR /opt/program
+
+RUN mv ./train.py ./train && \
+    mv ./serve.py ./serve && \
+    chmod +x ./train ./serve
 
 ENV PYTHONUNBUFFERED=TRUE
 ENV PYTHONDONTWRITEBYTECODE=TRUE
 ENV PATH="/opt/program:${PATH}"
-
-WORKDIR /opt/program
