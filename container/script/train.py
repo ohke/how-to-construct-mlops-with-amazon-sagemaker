@@ -32,6 +32,7 @@ def main():
     )
     parser.add_argument("--instance-count", type=int, default=1)
     parser.add_argument("--use-spot-instances", action="store_true", default=False)
+    parser.add_argument("--checkpoint-s3-uri", type=str, default=None)
     parser.add_argument("--epochs", type=int, default=2)
     parser.add_argument("--batch-size", type=int, default=64)
     parser.add_argument("--lr", type=float, default=1.0)
@@ -97,6 +98,7 @@ def main():
         instance_type=args.instance_type,
         instance_count=args.instance_count,
         use_spot_instances=args.use_spot_instances,
+        checkpoint_s3_uri=args.checkpoint_s3_uri,
         hyperparameters={
             "epochs": args.epochs,
             "batch_size": args.batch_size,
