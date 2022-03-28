@@ -3,11 +3,14 @@ from __future__ import annotations, print_function
 import argparse
 import json
 import os
+from typing import Optional
 import torch
 import torch.nn.functional as F
 import torch.optim as optim
 from dataclasses import dataclass
+from glob import glob
 from torchvision import datasets, transforms
+from torch.optim import Optimizer
 from torch.optim.lr_scheduler import StepLR
 
 from model import Net
@@ -26,6 +29,45 @@ class Hyperparameter:
             batch_size=int(d["batch_size"]),
             lr=float(d["lr"]),
         )
+
+
+@dataclass
+class Checkpoint:
+    epoch: int
+    model: Net
+    optimizer: Optimizer
+    scheduler: StepLR
+
+    def save(self, checkpoint_path: str) -> str:
+        os.makedirs(checkpoint_path, exist_ok=True)
+
+        path = os.path.join(checkpoint_path, "checkpoint-{:04d}.tar".format(self.epoch))
+        torch.save(
+            {
+                "epoch": self.epoch,
+                "model_state_dict": self.model.state_dict(),
+                "optimizer_state_dict": self.optimizer.state_dict(),
+                "scheduler_state_dict": self.scheduler.state_dict(),
+            },
+            path,
+        )
+
+        return path
+
+    @classmethod
+    def load(
+        cls, checkpoint_path: str, model: Net, optimizer: Optimizer, schduler: StepLR
+    ) -> Checkpoint:
+        tars = glob(os.path.join(checkpoint_path, "checkpoint-*.tar"))
+        if len(tars) == 0:
+            return Checkpoint(0, model, optimizer, schduler)
+
+        c = torch.load(tars[-1])
+        model.load_state_dict(c["model_state_dict"])
+        optimizer.load_state_dict(c["optimizer_state_dict"])
+        schduler.load_state_dict(c["scheduler_state_dict"])
+
+        return Checkpoint(c["epoch"], model, optimizer, schduler)
 
 
 def train(model, device, train_loader, optimizer, epoch, log_interval, dry_run):
@@ -133,6 +175,12 @@ def main():
         default="/opt/ml/input/config/hyperparameters.json",
         help="path to load hyperparameters.json",
     )
+    parser.add_argument(
+        "--checkpoint-path",
+        type=str,
+        default="/opt/ml/checkpoints",
+        help="path to save checkpoint file",
+    )
     args = parser.parse_args()
 
     hyperparameter = Hyperparameter.from_str_dict(json.load(open(args.parameter_path)))
@@ -161,20 +209,25 @@ def main():
 
     model = Net().to(device)
     optimizer = optim.Adadelta(model.parameters(), lr=hyperparameter.lr)
-
     scheduler = StepLR(optimizer, step_size=1, gamma=args.gamma)
-    for epoch in range(1, hyperparameter.epochs + 1):
+
+    checkpoint = Checkpoint.load(args.checkpoint_path, model, optimizer, scheduler)
+    for epoch in range(checkpoint.epoch + 1, hyperparameter.epochs + 1):
         train(
-            model,
+            checkpoint.model,
             device,
             train_loader,
-            optimizer,
+            checkpoint.optimizer,
             epoch,
             args.log_interval,
             args.dry_run,
         )
-        test(model, device, test_loader)
-        scheduler.step()
+        test(checkpoint.model, device, test_loader)
+        checkpoint.scheduler.step()
+
+        checkpoint.epoch = epoch
+        saved_path = checkpoint.save(args.checkpoint_path)
+        print(f"Checkpoint saved: {saved_path}")
 
     os.makedirs(args.output_path, exist_ok=True)
     torch.save(model.state_dict(), os.path.join(args.output_path, "mnist_cnn.pt"))
