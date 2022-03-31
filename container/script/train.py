@@ -4,7 +4,6 @@ from sagemaker.debugger import (
     FrameworkProfile,
     ProfilerConfig,
     ProfilerRule,
-    Rule,
     rule_configs,
 )
 from sagemaker.estimator import Estimator
