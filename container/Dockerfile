@@ -1,4 +1,4 @@
-FROM python:3.9-slim
+FROM python:3.9-slim AS dev
 
 RUN apt-get update && \
     apt-get install -y build-essential nginx && \
@@ -11,9 +11,11 @@ RUN poetry config virtualenvs.create false && \
     poetry install --no-dev && \
     rm -rf ~/.cache/pypoetry
 
-COPY src /opt/program
-
 WORKDIR /opt/program
+
+FROM dev
+
+COPY src /opt/program
 
 RUN mv ./train.py ./train && \
     mv ./serve.py ./serve && \

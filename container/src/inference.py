@@ -28,8 +28,7 @@ class ModelService(object):
     def get_model(cls):
         if cls.model == None:
             net = Net()
-            # net.load_state_dict(torch.load(os.path.join(prefix), "mnist_cnn.pt"))
-            net.load_state_dict(torch.load("./mnist_cnn.pt"))
+            net.load_state_dict(torch.load(os.path.join(model_path, "mnist_cnn.pt")))
             net.eval()
             cls.model = net
         return cls.model
@@ -79,3 +78,7 @@ def transformation():
 
     # Convert from tensor to JSON
     return flask.jsonify({k: v for k, v in enumerate(predictions[0].tolist())})
+
+
+if __name__ == "__main__":
+    app.run("0.0.0.0", 8080, debug=True)

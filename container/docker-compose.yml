@@ -1,0 +1,12 @@
+version: "3"
+
+services:
+  dev:
+    image: amazon-sagemaker-sandbox-model-dev
+    build:
+      context: .
+      target: dev
+    entrypoint: bash
+    volumes:
+      - ./src:/opt/program
+      - ./data:/opt/ml/
