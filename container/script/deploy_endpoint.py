@@ -1,4 +1,5 @@
 import click
+from datetime import datetime
 from sagemaker.estimator import Model
 
 
@@ -6,7 +7,7 @@ from sagemaker.estimator import Model
 @click.option("--model-s3-path")
 @click.option("--role")
 @click.option("--image-uri")
-@click.option("--endpoint-name", default="mnist")
+@click.option("--endpoint-name", default=f"mnist-{datetime.now().strftime('%Y%m%d%H%M%S')}")
 def main(model_s3_path: str, role: str, image_uri: str, endpoint_name: str):
     model = Model(
         model_data=model_s3_path,
