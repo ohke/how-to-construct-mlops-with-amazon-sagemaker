@@ -2,6 +2,7 @@
 import click
 import json
 import os
+import tarfile
 import torch
 from pathlib import Path
 from torchvision import datasets, transforms
@@ -10,11 +11,22 @@ from model import Net
 
 
 @click.command()
-@click.option("--model-path", type=Path, default=Path("/opt/ml/model/mnist_cnn.pt"))
+@click.option(
+    "--model-path", type=Path, default=Path("/opt/ml/processing/model/mnist_cnn.pt")
+)
 @click.option("--input-path", type=Path, default=Path("/opt/ml/processing/input/"))
-@click.option("--output-path", type=Path, default=Path("/opt/ml/processing/output/evaluation.json"))
+@click.option(
+    "--output-path",
+    type=Path,
+    default=Path("/opt/ml/processing/output/evaluation.json"),
+)
 @click.option("--batch-size", type=int, default=1000)
 def main(model_path: Path, input_path: Path, output_path: Path, batch_size: int):
+    if model_path.suffixes == [".tar", ".gz"]:
+        with tarfile.open(model_path) as t:
+            t.extractall(model_path.parent)
+        model_path = Path(model_path.parent / "mnist_cnn.pt")
+
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     test_kwargs = {"batch_size": batch_size}
