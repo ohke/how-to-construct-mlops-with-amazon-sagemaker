@@ -54,7 +54,9 @@ def main(model_path: Path, input_path: Path, output_path: Path, batch_size: int)
             correct += pred.eq(target.view_as(pred)).sum().item()
 
     evaluation = {
-        "accuracy": correct / len(data_loader.dataset),
+        "metrics": {
+            "accuracy": correct / len(data_loader.dataset),
+        },
     }
 
     os.makedirs(output_path.parent, exist_ok=True)
