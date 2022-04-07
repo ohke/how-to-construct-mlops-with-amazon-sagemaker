@@ -55,7 +55,9 @@ def main(model_path: Path, input_path: Path, output_path: Path, batch_size: int)
 
     evaluation = {
         "metrics": {
-            "accuracy": correct / len(data_loader.dataset),
+            "accuracy": {
+                "value": correct / len(data_loader.dataset),
+            },
         },
     }
 
