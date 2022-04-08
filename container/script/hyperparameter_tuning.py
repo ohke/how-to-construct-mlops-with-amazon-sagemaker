@@ -84,12 +84,12 @@ def main(
         trial_suffix=trial_suffix,
     )
 
-    tracker = Tracker.load(experiment_setting.trial_component.trial_component_name)
-
     tuner.fit(
         job_name=job_name,
         inputs=inputs,
-        experiment_config=experiment_setting.create_experiment_config(),
+        experiment_config=experiment_setting.create_experiment_config(
+            "hyperparameter_tuning"
+        ),
     )
 
     result = HyperparameterTuningJobAnalytics(job_name)

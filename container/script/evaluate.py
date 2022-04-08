@@ -57,7 +57,6 @@ def main(
         experiment_name=experiment_name,
         trial_suffix=trial_suffix,
     )
-    tracker = Tracker.load(experiment_setting.trial_component.trial_component_name)
 
     processor.run(
         inputs=inputs,
@@ -70,7 +69,7 @@ def main(
             "/opt/ml/processing/output/evaluation.json",
         ],
         outputs=outputs,
-        experiment_config=experiment_setting.create_experiment_config(),
+        experiment_config=experiment_setting.create_experiment_config("evaluate"),
         wait=True,
         logs=True,
     )

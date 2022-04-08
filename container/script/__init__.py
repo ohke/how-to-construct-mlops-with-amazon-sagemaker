@@ -3,7 +3,6 @@ from dataclasses import dataclass
 from datetime import datetime
 from smexperiments.experiment import Experiment
 from smexperiments.trial import Trial
-from smexperiments.trial_component import TrialComponent
 from typing import Optional
 
 
@@ -11,7 +10,6 @@ from typing import Optional
 class ExperimentSetting:
     experiment: Experiment
     trial: Trial
-    trial_component: TrialComponent
 
     def new(
         experiment_name: str, trial_suffix: Optional[str] = None
@@ -36,19 +34,11 @@ class ExperimentSetting:
                 trial_name=trial_name, experiment_name=experiment.experiment_name
             )
 
-        trial_component_name = (
-            f"{trial_name}-train-{datetime.strftime(datetime.now(), '%Y%m%d%H%M%S')}"
-        )
-        trial_component = TrialComponent.create(
-            trial_component_name=trial_component_name
-        )
-        trial.add_trial_component(trial_component)
+        return ExperimentSetting(experiment, trial)
 
-        return ExperimentSetting(experiment, trial, trial_component)
-
-    def create_experiment_config(self) -> dict:
+    def create_experiment_config(self, component_name: str) -> dict:
         return {
             "ExperimentName": self.experiment.experiment_name,
             "TrialName": self.trial.trial_name,
-            "TrialComponentDisplayName": self.trial_component.trial_component_name,
+            "TrialComponentDisplayName": component_name,
         }
