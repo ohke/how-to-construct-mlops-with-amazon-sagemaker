@@ -1,3 +1,4 @@
+from email.policy import default
 import click
 from typing import Optional
 from sagemaker.debugger import (
@@ -10,6 +11,7 @@ from sagemaker.estimator import Estimator
 from sagemaker.model_metrics import MetricsSource, ModelMetrics
 from sagemaker.session import Session
 from sagemaker.processing import ProcessingInput, ProcessingOutput, Processor
+from sagemaker.workflow.parameters import ParameterFloat, ParameterInteger
 from sagemaker.workflow.pipeline import Pipeline
 from sagemaker.workflow.pipeline_experiment_config import PipelineExperimentConfig
 from sagemaker.workflow.properties import PropertyFile
@@ -24,21 +26,19 @@ from script import ExperimentSetting
 @click.option("--role")
 @click.option("--experiment-name", default="mnist")
 @click.option("--trial-suffix", default=None)
-@click.option("--epochs", type=int, default=2)
-@click.option("--batch-size", type=int, default=64)
-@click.option("--lr", type=float, default=1.0)
 @click.option("--model-package-group-name", default="mnist")
 def main(
     image_uri: str,
     role: str,
     experiment_name: str,
     trial_suffix: Optional[str],
-    epochs: int,
-    batch_size: int,
-    lr: float,
     model_package_group_name: str,
 ):
     session = Session()
+
+    train_epochs = ParameterInteger(name="Epochs", default_value=2)
+    train_batch_size = ParameterInteger(name="BatchSize", default_value=64)
+    train_lr = ParameterFloat(name="LR", default_value=1.0)
 
     preprocess_processor = Processor(
         image_uri=image_uri,
@@ -73,9 +73,9 @@ def main(
         instance_type="ml.c5.xlarge",
         instance_count=1,
         hyperparameters={
-            "epochs": epochs,
-            "batch_size": batch_size,
-            "lr": lr,
+            "epochs": train_epochs,
+            "batch_size": train_batch_size,
+            "lr": train_lr,
         },
         metric_definitions=[
             {"Name": "test:loss", "Regex": "test_loss: ([0-9\\.]+)"},
@@ -182,6 +182,7 @@ def main(
     setting = ExperimentSetting.new(experiment_name, trial_suffix)
     pipeline = Pipeline(
         name=f"{experiment_name}-pipeline",
+        parameters=[train_epochs, train_batch_size, train_lr],
         steps=[preprocess_step, train_step, evaluate_step, register_step],
         pipeline_experiment_config=PipelineExperimentConfig(
             experiment_name=setting.experiment.experiment_name,
@@ -191,7 +192,13 @@ def main(
 
     pipeline.upsert(role_arn=role)
 
-    execution = pipeline.start()
+    execution = pipeline.start(
+        parameters=dict(
+            Epochs=1,
+            BatchSize=32,
+            LR=0.5,
+        )
+    )
 
 
 if __name__ == "__main__":
