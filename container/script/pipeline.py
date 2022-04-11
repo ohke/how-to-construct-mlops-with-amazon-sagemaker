@@ -1,4 +1,4 @@
-from email.policy import default
+import json
 import click
 from typing import Optional
 from sagemaker.debugger import (
@@ -11,6 +11,9 @@ from sagemaker.estimator import Estimator
 from sagemaker.model_metrics import MetricsSource, ModelMetrics
 from sagemaker.session import Session
 from sagemaker.processing import ProcessingInput, ProcessingOutput, Processor
+from sagemaker.workflow.conditions import ConditionGreaterThanOrEqualTo
+from sagemaker.workflow.condition_step import ConditionStep
+from sagemaker.workflow.functions import JsonGet
 from sagemaker.workflow.parameters import ParameterFloat, ParameterInteger
 from sagemaker.workflow.pipeline import Pipeline
 from sagemaker.workflow.pipeline_experiment_config import PipelineExperimentConfig
@@ -27,18 +30,26 @@ from script import ExperimentSetting
 @click.option("--experiment-name", default="mnist")
 @click.option("--trial-suffix", default=None)
 @click.option("--model-package-group-name", default="mnist")
+@click.option("--epochs", type=int, default=2)
+@click.option("--batch-size", type=int, default=64)
+@click.option("--lr", type=float, default=1.0)
+@click.option("--start", is_flag=True, show_default=True, default=False)
 def main(
     image_uri: str,
     role: str,
     experiment_name: str,
     trial_suffix: Optional[str],
     model_package_group_name: str,
+    epochs: int,
+    batch_size: int,
+    lr: float,
+    start: bool,
 ):
     session = Session()
 
-    train_epochs = ParameterInteger(name="Epochs", default_value=2)
-    train_batch_size = ParameterInteger(name="BatchSize", default_value=64)
-    train_lr = ParameterFloat(name="LR", default_value=1.0)
+    train_epochs = ParameterInteger(name="Epochs", default_value=epochs)
+    train_batch_size = ParameterInteger(name="BatchSize", default_value=batch_size)
+    train_lr = ParameterFloat(name="LR", default_value=lr)
 
     preprocess_processor = Processor(
         image_uri=image_uri,
@@ -119,6 +130,12 @@ def main(
         sagemaker_session=session,
     )
 
+    evaluation_report_property_file = PropertyFile(
+        name="EvaluationReport",
+        output_name="evaluation",
+        path="evaluation.json",
+    )
+
     evaluate_step = ProcessingStep(
         name="evaluate",
         display_name="Evaluate",
@@ -151,13 +168,7 @@ def main(
             "--output-path",
             "/opt/ml/processing/output/evaluation.json",
         ],
-        property_files=[
-            PropertyFile(
-                name="EvaluationReport",
-                output_name="evaluation",
-                path="evaluation.json",
-            )
-        ],
+        property_files=[evaluation_report_property_file],
     )
 
     register_step = RegisterModel(
@@ -176,29 +187,48 @@ def main(
                 content_type="application/json",
             ),
         ),
-        depends_on=[evaluate_step],
+    )
+
+    min_accuracy_condition = ConditionGreaterThanOrEqualTo(
+        left=JsonGet(
+            step_name=evaluate_step.name,
+            property_file=evaluation_report_property_file,
+            json_path="metrics.accuracy.value",
+        ),
+        right=0.98,
+    )
+
+    min_accuracy_condition_step = ConditionStep(
+        name="min_accuracy_condition",
+        display_name="MinAccuracyCondition",
+        conditions=[min_accuracy_condition],
+        if_steps=[register_step],
+        else_steps=[],
     )
 
     setting = ExperimentSetting.new(experiment_name, trial_suffix)
     pipeline = Pipeline(
         name=f"{experiment_name}-pipeline",
         parameters=[train_epochs, train_batch_size, train_lr],
-        steps=[preprocess_step, train_step, evaluate_step, register_step],
+        steps=[preprocess_step, train_step, evaluate_step, min_accuracy_condition_step],
         pipeline_experiment_config=PipelineExperimentConfig(
             experiment_name=setting.experiment.experiment_name,
             trial_name=setting.trial.trial_name,
         ),
     )
 
+    assert json.loads(pipeline.definition())
+
     pipeline.upsert(role_arn=role)
 
-    execution = pipeline.start(
-        parameters=dict(
-            Epochs=1,
-            BatchSize=32,
-            LR=0.5,
+    if start:
+        execution = pipeline.start(
+            parameters=dict(
+                Epochs=epochs,
+                BatchSize=batch_size,
+                LR=lr,
+            )
         )
-    )
 
 
 if __name__ == "__main__":
