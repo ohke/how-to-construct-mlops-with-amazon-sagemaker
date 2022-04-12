@@ -8,6 +8,7 @@ from sagemaker.debugger import (
     rule_configs,
 )
 from sagemaker.estimator import Estimator
+from sagemaker.model import Model
 from sagemaker.model_metrics import MetricsSource, ModelMetrics
 from sagemaker.session import Session
 from sagemaker.processing import ProcessingInput, ProcessingOutput, Processor
@@ -19,7 +20,13 @@ from sagemaker.workflow.pipeline import Pipeline
 from sagemaker.workflow.pipeline_experiment_config import PipelineExperimentConfig
 from sagemaker.workflow.properties import PropertyFile
 from sagemaker.workflow.step_collections import RegisterModel
-from sagemaker.workflow.steps import ProcessingStep, TrainingInput, TrainingStep
+from sagemaker.workflow.steps import (
+    CreateModelInput,
+    CreateModelStep,
+    ProcessingStep,
+    TrainingInput,
+    TrainingStep,
+)
 
 from script import ExperimentSetting
 
@@ -33,6 +40,7 @@ from script import ExperimentSetting
 @click.option("--epochs", type=int, default=2)
 @click.option("--batch-size", type=int, default=64)
 @click.option("--lr", type=float, default=1.0)
+@click.option("--min-accuracy", type=float, default=0.98)
 @click.option("--start", is_flag=True, show_default=True, default=False)
 def main(
     image_uri: str,
@@ -43,6 +51,7 @@ def main(
     epochs: int,
     batch_size: int,
     lr: float,
+    min_accuracy: float,
     start: bool,
 ):
     session = Session()
@@ -171,11 +180,18 @@ def main(
         property_files=[evaluation_report_property_file],
     )
 
+    model = Model(
+        image_uri=image_uri,
+        model_data=train_step.properties.ModelArtifacts.S3ModelArtifacts,
+        role=role,
+        sagemaker_session=session,
+    )
+
     register_step = RegisterModel(
         name="register",
         display_name="Register",
         estimator=train_step.estimator,
-        model_data=train_step.properties.ModelArtifacts.S3ModelArtifacts,
+        model=model,
         content_types=["image/jpeg"],
         response_types=["application/json"],
         inference_instances=["ml.t2.medium"],
@@ -189,20 +205,27 @@ def main(
         ),
     )
 
+    create_step = CreateModelStep(
+        name="create",
+        display_name="Create",
+        model=model,
+        inputs=CreateModelInput(instance_type="ml.t2.medium"),
+    )
+
     min_accuracy_condition = ConditionGreaterThanOrEqualTo(
         left=JsonGet(
             step_name=evaluate_step.name,
             property_file=evaluation_report_property_file,
             json_path="metrics.accuracy.value",
         ),
-        right=0.98,
+        right=min_accuracy,
     )
 
     min_accuracy_condition_step = ConditionStep(
         name="min_accuracy_condition",
         display_name="MinAccuracyCondition",
         conditions=[min_accuracy_condition],
-        if_steps=[register_step],
+        if_steps=[register_step, create_step],
         else_steps=[],
     )
 
