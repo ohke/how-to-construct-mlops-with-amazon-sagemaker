@@ -1,17 +1,14 @@
 [tool.poetry]
-name = "container"
+name = "script"
 version = "0.1.0"
 description = ""
 authors = ["ohke <kenta1988@gmail.com>"]
 
 [tool.poetry.dependencies]
 python = "^3.9"
-click = ">=8,<9"
-flask = ">=2,<3"
-gunicorn = "20.1.0"
-torch = "^1.11"
-torchvision = "^0.12.0"
-Pillow = "^9.0.1"
+boto3 = "^1.21.22"
+sagemaker = {extras = ["local"], version = "^2.85.0"}
+sagemaker-experiments = "^0.1.35"
 
 [tool.poetry.dev-dependencies]
 black = "^22.1.0"
