@@ -3,7 +3,7 @@ import click
 from sagemaker.processing import ProcessingInput, ProcessingOutput, Processor
 from smexperiments.tracker import Tracker
 
-from script import ExperimentSetting
+from utility import ExperimentSetting
 
 
 @click.command()

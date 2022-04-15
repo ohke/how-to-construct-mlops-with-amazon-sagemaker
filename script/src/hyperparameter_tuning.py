@@ -5,7 +5,7 @@ from sagemaker.tuner import ContinuousParameter, HyperparameterTuner
 from smexperiments.tracker import Tracker
 from typing import Optional
 
-from script import ExperimentSetting
+from utility import ExperimentSetting
 
 
 @click.command()

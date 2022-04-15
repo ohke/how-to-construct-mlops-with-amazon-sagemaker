@@ -2,7 +2,7 @@ from typing import Optional
 import click
 from sagemaker.estimator import Model
 
-from script import ExperimentSetting
+from utility import ExperimentSetting
 
 
 @click.command()

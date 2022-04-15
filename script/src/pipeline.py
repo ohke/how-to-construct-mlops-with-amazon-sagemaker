@@ -28,7 +28,7 @@ from sagemaker.workflow.steps import (
     TrainingStep,
 )
 
-from script import ExperimentSetting
+from utility import ExperimentSetting
 
 
 @click.command()
