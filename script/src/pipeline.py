@@ -1,6 +1,5 @@
 import json
 import click
-from typing import Optional
 from sagemaker.debugger import (
     FrameworkProfile,
     ProfilerConfig,
@@ -14,9 +13,9 @@ from sagemaker.session import Session
 from sagemaker.processing import ProcessingInput, ProcessingOutput, Processor
 from sagemaker.workflow.conditions import ConditionGreaterThanOrEqualTo
 from sagemaker.workflow.condition_step import ConditionStep
-from sagemaker.workflow.functions import JsonGet
+from sagemaker.workflow.functions import Join, JsonGet
 from sagemaker.workflow.parameters import ParameterFloat, ParameterInteger
-from sagemaker.workflow.pipeline import Pipeline
+from sagemaker.workflow.pipeline import ExecutionVariables, Pipeline
 from sagemaker.workflow.pipeline_experiment_config import PipelineExperimentConfig
 from sagemaker.workflow.properties import PropertyFile
 from sagemaker.workflow.step_collections import RegisterModel
@@ -28,25 +27,21 @@ from sagemaker.workflow.steps import (
     TrainingStep,
 )
 
-from utility import ExperimentSetting
-
 
 @click.command()
-@click.option("--image-uri")
-@click.option("--role")
-@click.option("--experiment-name", default="mnist")
-@click.option("--trial-suffix", default=None)
-@click.option("--model-package-group-name", default="mnist")
+@click.option("--pipeline-name", type=str)
+@click.option("--image-uri", type=str)
+@click.option("--role", type=str)
+@click.option("--model-package-group-name", type=str, default="mnist")
 @click.option("--epochs", type=int, default=2)
 @click.option("--batch-size", type=int, default=64)
 @click.option("--lr", type=float, default=1.0)
 @click.option("--min-accuracy", type=float, default=0.98)
 @click.option("--start", is_flag=True, show_default=True, default=False)
 def main(
+    pipeline_name: str,
     image_uri: str,
     role: str,
-    experiment_name: str,
-    trial_suffix: Optional[str],
     model_package_group_name: str,
     epochs: int,
     batch_size: int,
@@ -229,14 +224,19 @@ def main(
         else_steps=[],
     )
 
-    setting = ExperimentSetting.new(experiment_name, trial_suffix)
     pipeline = Pipeline(
-        name=f"{experiment_name}-pipeline",
+        name=pipeline_name,
         parameters=[train_epochs, train_batch_size, train_lr],
         steps=[preprocess_step, train_step, evaluate_step, min_accuracy_condition_step],
         pipeline_experiment_config=PipelineExperimentConfig(
-            experiment_name=setting.experiment.experiment_name,
-            trial_name=setting.trial.trial_name,
+            experiment_name=ExecutionVariables.PIPELINE_NAME,
+            trial_name=Join(
+                on="-",
+                values=[
+                    ExecutionVariables.PIPELINE_NAME,
+                    ExecutionVariables.PIPELINE_EXECUTION_ID,
+                ],
+            ),
         ),
     )
 

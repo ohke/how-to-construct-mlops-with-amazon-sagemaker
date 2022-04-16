@@ -52,7 +52,7 @@ def main(
     if local_mode:
         experiment_config = None
 
-        inputs = { "train": input_s3_uri }
+        inputs = {"train": input_s3_uri}
 
         rules = None
         profiler_config = None
@@ -61,9 +61,7 @@ def main(
         experiment_config = setting.create_experiment_config("train")
 
         inputs = {
-            "train": input_s3_uri
-            if local_mode
-            else TrainingInput(s3_data=input_s3_uri, distribution="ShardedByS3Key")
+            "train": TrainingInput(s3_data=input_s3_uri, distribution="ShardedByS3Key")
         }
 
         rules = [
