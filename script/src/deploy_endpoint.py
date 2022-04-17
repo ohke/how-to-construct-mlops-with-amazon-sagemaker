@@ -1,28 +1,41 @@
 import click
-from datetime import datetime
-from sagemaker.estimator import Model
+from sagemaker.session import Session
 
 
 @click.command()
-@click.option("--model-s3-uri")
-@click.option("--role")
-@click.option("--image-uri")
-@click.option(
-    "--endpoint-name", default=f"mnist-{datetime.now().strftime('%Y%m%d%H%M%S')}"
-)
-def main(model_s3_uri: str, role: str, image_uri: str, endpoint_name: str):
-    model = Model(
-        model_data=model_s3_uri,
-        role=role,
-        image_uri=image_uri,
+@click.option("--endpoint-name", type=str)
+@click.option("--endpoint-config-name", type=str)
+@click.option("--model-name", type=str)
+@click.option("--initial-instance-count", type=int, default=1)
+@click.option("--instance-type", type=str, default="ml.t2.medium")
+def main(
+    endpoint_name: str,
+    endpoint_config_name: str,
+    model_name: str,
+    initial_instance_count: int,
+    instance_type: str,
+):
+    session = Session()
+
+    session.create_endpoint_config(
+        name=endpoint_config_name,
+        model_name=model_name,
+        initial_instance_count=initial_instance_count,
+        instance_type=instance_type,
     )
 
-    model.deploy(
-        endpoint_name=endpoint_name,
-        initial_instance_count=1,
-        instance_type="ml.t2.medium",
-        wait=True,
-    )
+    try:
+        session.create_endpoint(
+            endpoint_name=endpoint_name,
+            config_name=endpoint_config_name,
+            wait=True,
+        )
+    except:
+        session.update_endpoint(
+            endpoint_name=endpoint_name,
+            endpoint_config_name=endpoint_config_name,
+            wait=True,
+        )
 
 
 if __name__ == "__main__":
