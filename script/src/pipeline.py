@@ -49,6 +49,9 @@ def main(
     min_accuracy: float,
     start: bool,
 ):
+    """Create/update SageMaker pipeline."""
+    print("Started create/update pipeline.")
+
     session = Session()
 
     train_epochs = ParameterInteger(name="Epochs", default_value=epochs)
@@ -252,6 +255,8 @@ def main(
                 LR=lr,
             )
         )
+
+    print("Completed.")
 
 
 if __name__ == "__main__":

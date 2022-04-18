@@ -15,6 +15,7 @@ def main(
     initial_instance_count: int,
     instance_type: str,
 ):
+    """Create or update SageMaker endpoint."""
     session = Session()
 
     session.create_endpoint_config(
@@ -36,6 +37,8 @@ def main(
             endpoint_config_name=endpoint_config_name,
             wait=True,
         )
+
+    print("Completed.")
 
 
 if __name__ == "__main__":

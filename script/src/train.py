@@ -16,6 +16,7 @@ from utility import ExperimentSetting
 @click.option("--image-uri", type=str, required=True)
 @click.option("--role", type=str, required=True)
 @click.option("--experiment-name", type=str, default="mnist")
+@click.option("--component-name", type=str, default="train")
 @click.option("--trial-suffix", type=str, default=None)
 @click.option("--input-s3-uri", type=str, required=True)
 @click.option("--output-s3-uri", type=str, default=None)
@@ -34,6 +35,7 @@ def main(
     image_uri: str,
     role: str,
     experiment_name: str,
+    component_name: str,
     trial_suffix: Optional[str],
     input_s3_uri: str,
     output_s3_uri: Optional[str],
@@ -45,7 +47,8 @@ def main(
     batch_size: str,
     lr: float,
 ):
-    print("Starting model training.")
+    """Train model with MNIST dataset."""
+    print("Started model training.")
 
     local_mode = instance_type == "local"
 
@@ -58,7 +61,7 @@ def main(
         profiler_config = None
     else:
         setting = ExperimentSetting.new(experiment_name, trial_suffix)
-        experiment_config = setting.create_experiment_config("train")
+        experiment_config = setting.create_experiment_config(component_name)
 
         inputs = {
             "train": TrainingInput(s3_data=input_s3_uri, distribution="ShardedByS3Key")

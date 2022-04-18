@@ -1,29 +1,29 @@
 import click
 from sagemaker.analytics import HyperparameterTuningJobAnalytics
 from sagemaker.estimator import Estimator, TrainingInput
-from sagemaker.tuner import ContinuousParameter, HyperparameterTuner
-from smexperiments.tracker import Tracker
+from sagemaker.tuner import CategoricalParameter, ContinuousParameter, HyperparameterTuner
 from typing import Optional
 
 from utility import ExperimentSetting
 
 
 @click.command()
-@click.option("--image-uri")
-@click.option("--role")
-@click.option("--job-name")
-@click.option("--max-jobs")
-@click.option("--max-parallel-jobs")
-@click.option("--experiment-name", default="mnist")
-@click.option("--trial-suffix", default=None)
-@click.option("--input-s3-uri")
-@click.option("--output-s3-uri", default=None)
+@click.option("--image-uri", type=str)
+@click.option("--role", type=str)
+@click.option("--job-name", type=str)
+@click.option("--max-jobs", type=int)
+@click.option("--max-parallel-jobs", type=int)
+@click.option("--experiment-name", type=str, default="mnist")
+@click.option("--trial-suffix", type=str, default=None)
+@click.option("--input-s3-uri", type=str)
+@click.option("--output-s3-uri", type=str, default=None)
 @click.option(
     "--instance-type",
     type=click.Choice(["ml.c5.xlarge", "ml.g4dn.xlarge"]),
     default="ml.c5.xlarge",
 )
 @click.option("--use-spot-instances", is_flag=True, default=False)
+@click.option("--epochs", type=int, default=2)
 def main(
     image_uri: str,
     role: str,
@@ -37,8 +37,10 @@ def main(
     instance_type: str,
     use_spot_instances: bool,
     epochs: int,
-    batch_size: int,
 ):
+    """Select optimal batch size and LR."""
+    print("Started hyperparameter tuning.")
+
     objective_metric_name = "test:loss"
     metric_definitions = [
         {"Name": objective_metric_name, "Regex": "test_loss: ([0-9\\.]+)"},
@@ -53,13 +55,14 @@ def main(
         instance_count=1,
         use_spot_instances=use_spot_instances,
         hyperparameters={
-            "epochs": 2,
+            "epochs": epochs,
             "batch_size": 64,
         },
         metric_definitions=metric_definitions,
     )
 
     hyperparameter_ranges = {
+        "batch_size": CategoricalParameter([32, 64]),
         "lr": ContinuousParameter(0.01, 2.0, scaling_type="Auto"),
     }
 
@@ -95,6 +98,8 @@ def main(
     result = HyperparameterTuningJobAnalytics(job_name)
 
     print(result.dataframe())
+
+    print("Completed.")
 
 
 if __name__ == "__main__":

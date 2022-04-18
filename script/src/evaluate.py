@@ -1,20 +1,19 @@
 from typing import Optional
 import click
 from sagemaker.processing import ProcessingInput, ProcessingOutput, Processor
-from smexperiments.tracker import Tracker
 
 from utility import ExperimentSetting
 
 
 @click.command()
-@click.option("--image-uri")
-@click.option("--role")
-@click.option("--input-s3-uri")
-@click.option("--model-s3-uri")
-@click.option("--instance-type", default="ml.c5.xlarge")
-@click.option("--instance-count", default=1)
-@click.option("--experiment-name", default="mnist")
-@click.option("--trial-suffix", default=None)
+@click.option("--image-uri", type=str)
+@click.option("--role", type=str)
+@click.option("--input-s3-uri", type=str)
+@click.option("--model-s3-uri", type=str)
+@click.option("--instance-type", type=str, default="ml.c5.xlarge")
+@click.option("--instance-count", type=int, default=1)
+@click.option("--experiment-name", type=str, default="mnist")
+@click.option("--trial-suffix", type=str, default=None)
 def main(
     image_uri: str,
     role: str,
@@ -25,6 +24,9 @@ def main(
     experiment_name: Optional[str],
     trial_suffix: Optional[str],
 ):
+    """Evaluate the trained model for accuracy with test data."""
+    print("Started evaluation with test dataset.")
+
     processor = Processor(
         image_uri=image_uri,
         entrypoint=["python", "/opt/program/evaluate.py"],
@@ -73,6 +75,8 @@ def main(
         wait=True,
         logs=True,
     )
+
+    print("Completed evaluation.")
 
 
 if __name__ == "__main__":
