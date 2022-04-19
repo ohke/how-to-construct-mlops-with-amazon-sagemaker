@@ -1,9 +1,10 @@
 #!/usr/bin/env python
+# https://github.com/pytorch/examples/blob/main/mnist/main.py
+
 from __future__ import annotations, print_function
 import argparse
 import json
 import os
-from typing import Optional
 import torch
 import torch.nn.functional as F
 import torch.optim as optim
@@ -72,11 +73,14 @@ class Checkpoint:
 
 def train(model, device, train_loader, optimizer, epoch, log_interval, dry_run):
     model.train()
+
+    train_loss = 0.0
     for batch_idx, (data, target) in enumerate(train_loader):
         data, target = data.to(device), target.to(device)
         optimizer.zero_grad()
         output = model(data)
         loss = F.nll_loss(output, target)
+        train_loss += loss.item()
         loss.backward()
         optimizer.step()
         if batch_idx % log_interval == 0:
@@ -91,6 +95,8 @@ def train(model, device, train_loader, optimizer, epoch, log_interval, dry_run):
             )
             if dry_run:
                 break
+
+    print("\ntrain_loss: {:.4f}\n".format(train_loss))
 
 
 def test(model, device, test_loader):

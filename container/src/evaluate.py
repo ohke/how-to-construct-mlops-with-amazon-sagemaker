@@ -22,6 +22,7 @@ from model import Net
 )
 @click.option("--batch-size", type=int, default=1000)
 def main(model_path: Path, input_path: Path, output_path: Path, batch_size: int):
+    """Caliculate accuracy of model."""
     if model_path.suffixes == [".tar", ".gz"]:
         with tarfile.open(model_path) as t:
             t.extractall(model_path.parent)
