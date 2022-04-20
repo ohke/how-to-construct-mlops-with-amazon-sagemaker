@@ -29,12 +29,8 @@ def main(
 
     outputs = [
         ProcessingOutput(
-            source="/opt/ml/processing/output/train",
-            output_name="preprocess-train",
-        ),
-        ProcessingOutput(
-            source="/opt/ml/processing/output/test",
-            output_name="preprocess-test",
+            source="/opt/ml/processing/output",
+            output_name="preprocess",
         ),
     ]
 
@@ -47,12 +43,7 @@ def main(
     )
     processor.run(
         inputs=[],
-        arguments=[
-            "--output-train-path",
-            "/opt/ml/processing/output/train",
-            "--output-test-path",
-            "/opt/ml/processing/output/test",
-        ],
+        arguments=["--output-path", "/opt/ml/processing/output"],
         outputs=outputs,
         experiment_config=setting.create_experiment_config(component_name),
         wait=True,

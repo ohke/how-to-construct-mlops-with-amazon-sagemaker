@@ -1,7 +1,11 @@
 import click
 from sagemaker.analytics import HyperparameterTuningJobAnalytics
 from sagemaker.estimator import Estimator, TrainingInput
-from sagemaker.tuner import CategoricalParameter, ContinuousParameter, HyperparameterTuner
+from sagemaker.tuner import (
+    CategoricalParameter,
+    ContinuousParameter,
+    HyperparameterTuner,
+)
 from typing import Optional
 
 from utility import ExperimentSetting

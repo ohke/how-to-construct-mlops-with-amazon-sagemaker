@@ -29,7 +29,7 @@ def main(
 
     model = Model(
         image_uri=image_uri,
-        model_data=model_s3_uri, 
+        model_data=model_s3_uri,
         role=role,
         sagemaker_session=session,
     )

@@ -73,15 +73,13 @@ def main(
         processor=preprocess_processor,
         outputs=[
             ProcessingOutput(
-                source="/opt/ml/processing/output/train",
-                output_name="preprocess-train",
+                source="/opt/ml/processing/output",
+                output_name="preprocess",
             ),
         ],
         job_arguments=[
-            "--output-train-path",
-            "/opt/ml/processing/output/train",
-            "--output-test-path",
-            "/opt/ml/processing/output/test",
+            "--output-path",
+            "/opt/ml/processing/output",
         ],
     )
 
@@ -122,7 +120,7 @@ def main(
         inputs={
             "train": TrainingInput(
                 s3_data=preprocess_step.properties.ProcessingOutputConfig.Outputs[
-                    "preprocess-train"
+                    "preprocess"
                 ].S3Output.S3Uri,
             )
         },
@@ -151,7 +149,7 @@ def main(
             ProcessingInput(
                 input_name="input-data",
                 source=preprocess_step.properties.ProcessingOutputConfig.Outputs[
-                    "preprocess-train"
+                    "preprocess"
                 ].S3Output.S3Uri,
                 destination="/opt/ml/processing/input/data/",
             ),
