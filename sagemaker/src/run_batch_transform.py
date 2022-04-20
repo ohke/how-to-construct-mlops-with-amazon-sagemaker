@@ -12,7 +12,7 @@ from utility import ExperimentSetting
 @click.option("--input-s3-uri", type=str)
 @click.option("--job-name", type=str, default=None)
 @click.option("--experiment-name", type=str, default="mnist")
-@click.option("--trial-suffix", type=str, type=str, default=None)
+@click.option("--trial-suffix", type=str, default=None)
 def main(
     model_s3_uri: str,
     role: str,
