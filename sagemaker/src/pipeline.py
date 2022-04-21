@@ -246,7 +246,8 @@ def main(
     pipeline.upsert(role_arn=role)
 
     if start:
-        execution = pipeline.start(
+        print("Running.")
+        pipeline.start(
             parameters=dict(
                 Epochs=epochs,
                 BatchSize=batch_size,

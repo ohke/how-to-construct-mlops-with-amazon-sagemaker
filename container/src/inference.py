@@ -26,7 +26,7 @@ class ModelService(object):
 
     @classmethod
     def get_model(cls):
-        if cls.model == None:
+        if cls.model is None:
             net = Net()
             net.load_state_dict(torch.load(os.path.join(model_path, "mnist_cnn.pt")))
             net.eval()

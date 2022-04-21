@@ -31,7 +31,7 @@ def main(
             config_name=endpoint_config_name,
             wait=True,
         )
-    except:
+    except Exception:
         session.update_endpoint(
             endpoint_name=endpoint_name,
             endpoint_config_name=endpoint_config_name,

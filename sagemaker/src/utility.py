@@ -21,7 +21,7 @@ class ExperimentSetting:
 
         try:
             experiment = Experiment.load(experiment_name=experiment_name)
-        except:
+        except Exception:
             experiment = Experiment.create(
                 experiment_name=experiment_name, description="MNIST experiment"
             )
@@ -29,7 +29,7 @@ class ExperimentSetting:
         trial_name = f"{experiment.experiment_name}-{suffix}"
         try:
             trial = Trial.load(trial_name=trial_name)
-        except:
+        except Exception:
             trial = Trial.create(
                 trial_name=trial_name, experiment_name=experiment.experiment_name
             )
