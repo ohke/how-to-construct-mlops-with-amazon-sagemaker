@@ -6,8 +6,8 @@ from utility import ExperimentSetting
 
 
 @click.command()
-@click.option("--image-uri", type=str)
-@click.option("--role", type=str)
+@click.option("--image-uri", type=str, envvar="IMAGE_URI")
+@click.option("--role", type=str, envvar="ROLE")
 @click.option("--input-s3-uri", type=str)
 @click.option("--model-s3-uri", type=str)
 @click.option("--instance-type", type=str, default="ml.c5.xlarge")

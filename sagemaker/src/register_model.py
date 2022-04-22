@@ -5,8 +5,8 @@ from sagemaker.session import Session
 
 
 @click.command()
-@click.option("--role", type=str)
-@click.option("--image-uri", type=str)
+@click.option("--role", type=str, envvar="ROLE")
+@click.option("--image-uri", type=str, envvar="IMAGE_URI")
 @click.option("--model-s3-uri", type=str)
 @click.option("--evaluation-s3-uri", type=str)
 @click.option("--model-package-group-name", type=str, default="mnist")

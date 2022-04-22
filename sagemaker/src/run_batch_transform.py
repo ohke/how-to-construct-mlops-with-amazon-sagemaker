@@ -7,8 +7,8 @@ from utility import ExperimentSetting
 
 @click.command()
 @click.option("--model-s3-uri", type=str)
-@click.option("--role", type=str)
-@click.option("--image-uri", type=str)
+@click.option("--role", type=str, envvar="ROLE")
+@click.option("--image-uri", type=str, envvar="IMAGE_URI")
 @click.option("--input-s3-uri", type=str)
 @click.option("--job-name", type=str, default=None)
 @click.option("--experiment-name", type=str, default="mnist")

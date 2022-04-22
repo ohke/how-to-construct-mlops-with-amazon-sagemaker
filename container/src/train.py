@@ -2,7 +2,7 @@
 # https://github.com/pytorch/examples/blob/main/mnist/main.py
 
 from __future__ import annotations, print_function
-import argparse
+import click
 import json
 import os
 import torch
@@ -127,78 +127,83 @@ def test(model, device, test_loader):
     )
 
 
-def main():
-    # Training settings
-    parser = argparse.ArgumentParser(description="Train PyTorch MNIST Example")
-    parser.add_argument(
-        "--test-batch-size",
-        type=int,
-        default=1000,
-        metavar="N",
-        help="input batch size for testing (default: 1000)",
-    )
-    parser.add_argument(
-        "--gamma",
-        type=float,
-        default=0.7,
-        metavar="M",
-        help="Learning rate step gamma (default: 0.7)",
-    )
-    parser.add_argument(
-        "--no-cuda", action="store_true", default=False, help="disables CUDA training"
-    )
-    parser.add_argument(
-        "--dry-run",
-        action="store_true",
-        default=False,
-        help="quickly check a single pass",
-    )
-    parser.add_argument(
-        "--seed", type=int, default=1, metavar="S", help="random seed (default: 1)"
-    )
-    parser.add_argument(
-        "--log-interval",
-        type=int,
-        default=10,
-        metavar="N",
-        help="how many batches to wait before logging training status",
-    )
-    parser.add_argument(
-        "--input-path",
-        type=str,
-        default="/opt/ml/input/data/train",
-        help="path to load data",
-    )
-    parser.add_argument(
-        "--output-path",
-        type=str,
-        default="/opt/ml/model",
-        help="path to save trained model",
-    )
-    parser.add_argument(
-        "--parameter-path",
-        type=str,
-        default="/opt/ml/input/config/hyperparameters.json",
-        help="path to load hyperparameters.json",
-    )
-    parser.add_argument(
-        "--checkpoint-path",
-        type=str,
-        default="/opt/ml/checkpoints",
-        help="path to save checkpoint file",
-    )
-    args = parser.parse_args()
+@click.command()
+@click.option(
+    "--test-batch-size",
+    type=int,
+    default=1000,
+    help="input batch size for testing (default: 1000)",
+)
+@click.option(
+    "--gamma", type=float, default=7, help="Learning rate step gamma (default: 0.7)"
+)
+@click.option(
+    "--no-cuda",
+    is_flag=True,
+    show_default=True,
+    default=False,
+    help="disables CUDA training",
+)
+@click.option(
+    "--dry-run",
+    is_flag=True,
+    show_default=True,
+    default=False,
+    help="quickly check a single pass",
+)
+@click.option("--seed", type=int, default=1, help="random seed (default: 1)")
+@click.option(
+    "--log-interval",
+    type=int,
+    default=10,
+    help="how many batches to wait before logging training status",
+)
+@click.option(
+    "--input-path",
+    type=str,
+    default="/opt/ml/input/data/train",
+    help="path to load data",
+)
+@click.option(
+    "--output-path",
+    type=str,
+    default="/opt/ml/model",
+    help="path to save trained model",
+)
+@click.option(
+    "--parameter-path",
+    type=str,
+    default="/opt/ml/input/config/hyperparameters.json",
+    help="path to load hyperparameters.json",
+)
+@click.option(
+    "--checkpoint-path",
+    type=str,
+    default="/opt/ml/checkpoints",
+    help="path to save checkpoint file",
+)
+def main(
+    test_batch_size: int,
+    gamma: float,
+    no_cuda: bool,
+    dry_run: bool,
+    seed: int,
+    log_interval: int,
+    input_path: str,
+    output_path: str,
+    parameter_path: str,
+    checkpoint_path: str,
+):
+    hyperparameter = Hyperparameter.from_str_dict(json.load(open(parameter_path)))
 
-    hyperparameter = Hyperparameter.from_str_dict(json.load(open(args.parameter_path)))
+    use_cuda = not no_cuda and torch.cuda.is_available()
 
-    use_cuda = not args.no_cuda and torch.cuda.is_available()
-
-    torch.manual_seed(args.seed)
+    torch.manual_seed(seed)
 
     device = torch.device("cuda" if use_cuda else "cpu")
 
     train_kwargs = {"batch_size": hyperparameter.batch_size}
-    test_kwargs = {"batch_size": args.test_batch_size}
+    test_kwargs = {"batch_size": test_batch_size}
     if use_cuda:
         cuda_kwargs = {"num_workers": 1, "pin_memory": True, "shuffle": True}
         train_kwargs.update(cuda_kwargs)
@@ -208,16 +213,16 @@ def main():
         [transforms.ToTensor(), transforms.Normalize((0.1307,), (0.3081,))]
     )
 
-    dataset1 = datasets.MNIST(args.input_path, train=True, transform=transform)
-    dataset2 = datasets.MNIST(args.input_path, train=False, transform=transform)
+    dataset1 = datasets.MNIST(input_path, train=True, transform=transform)
+    dataset2 = datasets.MNIST(input_path, train=False, transform=transform)
     train_loader = torch.utils.data.DataLoader(dataset1, **train_kwargs)
     test_loader = torch.utils.data.DataLoader(dataset2, **test_kwargs)
 
     model = Net().to(device)
     optimizer = optim.Adadelta(model.parameters(), lr=hyperparameter.lr)
-    scheduler = StepLR(optimizer, step_size=1, gamma=args.gamma)
+    scheduler = StepLR(optimizer, step_size=1, gamma=gamma)
 
-    checkpoint = Checkpoint.load(args.checkpoint_path, model, optimizer, scheduler)
+    checkpoint = Checkpoint.load(checkpoint_path, model, optimizer, scheduler)
     for epoch in range(checkpoint.epoch + 1, hyperparameter.epochs + 1):
         train(
             checkpoint.model,
@@ -225,18 +230,18 @@ def main():
             train_loader,
             checkpoint.optimizer,
             epoch,
-            args.log_interval,
-            args.dry_run,
+            log_interval,
+            dry_run,
         )
         test(checkpoint.model, device, test_loader)
         checkpoint.scheduler.step()
 
         checkpoint.epoch = epoch
-        saved_path = checkpoint.save(args.checkpoint_path)
+        saved_path = checkpoint.save(checkpoint_path)
         print(f"Checkpoint saved: {saved_path}")
 
-    os.makedirs(args.output_path, exist_ok=True)
-    torch.save(model.state_dict(), os.path.join(args.output_path, "mnist_cnn.pt"))
+    os.makedirs(output_path, exist_ok=True)
+    torch.save(model.state_dict(), os.path.join(output_path, "mnist_cnn.pt"))
 
 
 if __name__ == "__main__":

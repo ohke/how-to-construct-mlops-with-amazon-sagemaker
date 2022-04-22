@@ -12,8 +12,8 @@ from utility import ExperimentSetting
 
 
 @click.command()
-@click.option("--image-uri", type=str)
-@click.option("--role", type=str)
+@click.option("--image-uri", type=str, envvar="IMAGE_URI")
+@click.option("--role", type=str, envvar="ROLE")
 @click.option("--job-name", type=str)
 @click.option("--max-jobs", type=int)
 @click.option("--max-parallel-jobs", type=int)

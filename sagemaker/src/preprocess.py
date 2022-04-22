@@ -6,8 +6,8 @@ from utility import ExperimentSetting
 
 
 @click.command()
-@click.option("--image-uri", type=str)
-@click.option("--role", type=str)
+@click.option("--image-uri", type=str, envvar="IMAGE_URI")
+@click.option("--role", type=str, envvar="ROLE")
 @click.option("--experiment-name", type=str, default="mnist")
 @click.option("--component-name", type=str, default="preprocess")
 @click.option("--trial-suffix", type=str, default=None)

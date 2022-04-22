@@ -30,8 +30,8 @@ from sagemaker.workflow.steps import (
 
 @click.command()
 @click.option("--pipeline-name", type=str)
-@click.option("--image-uri", type=str)
-@click.option("--role", type=str)
+@click.option("--image-uri", type=str, envvar="IMAGE_URI")
+@click.option("--role", type=str, envvar="ROLE")
 @click.option("--model-package-group-name", type=str, default="mnist")
 @click.option("--epochs", type=int, default=2)
 @click.option("--batch-size", type=int, default=64)
