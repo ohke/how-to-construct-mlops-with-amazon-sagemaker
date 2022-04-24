@@ -3,7 +3,7 @@ from sagemaker import Session
 
 
 @click.command()
-@click.option("--endpoint-name", type=str)
+@click.option("--endpoint-name", type=str, envvar="SAGEMAKER_ENDPOINT_NAME")
 def main(endpoint_name: str):
     """Delete the SageMaker endpoint."""
     session = Session()

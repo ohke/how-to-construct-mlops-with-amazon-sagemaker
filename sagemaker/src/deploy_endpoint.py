@@ -3,7 +3,7 @@ from sagemaker.session import Session
 
 
 @click.command()
-@click.option("--endpoint-name", type=str)
+@click.option("--endpoint-name", type=str, envvar="SAGEMAKER_ENDPOINT_NAME")
 @click.option("--endpoint-config-name", type=str)
 @click.option("--model-name", type=str)
 @click.option("--initial-instance-count", type=int, default=1)

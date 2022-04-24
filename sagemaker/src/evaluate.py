@@ -1,6 +1,7 @@
 from typing import Optional
 import click
 from sagemaker.processing import ProcessingInput, ProcessingOutput, Processor
+from sagemaker.session import Session
 
 from utility import ExperimentSetting
 
@@ -12,7 +13,8 @@ from utility import ExperimentSetting
 @click.option("--model-s3-uri", type=str)
 @click.option("--instance-type", type=str, default="ml.c5.xlarge")
 @click.option("--instance-count", type=int, default=1)
-@click.option("--experiment-name", type=str, default="mnist")
+@click.option("--experiment-name", type=str, envvar="SAGEMAKER_EXPERIMENT_NAME")
+@click.option("--component-name", type=str, default="evaluate")
 @click.option("--trial-suffix", type=str, default=None)
 def main(
     image_uri: str,
@@ -22,10 +24,13 @@ def main(
     instance_type: str,
     instance_count: int,
     experiment_name: Optional[str],
+    component_name: str,
     trial_suffix: Optional[str],
 ):
     """Evaluate the trained model for accuracy with test data."""
     print("Started evaluation with test dataset.")
+
+    session = Session()
 
     processor = Processor(
         image_uri=image_uri,
@@ -33,6 +38,7 @@ def main(
         role=role,
         instance_count=instance_count,
         instance_type=instance_type,
+        sagemaker_session=session,
     )
 
     inputs = [
@@ -71,7 +77,7 @@ def main(
             "/opt/ml/processing/output/evaluation.json",
         ],
         outputs=outputs,
-        experiment_config=experiment_setting.create_experiment_config("evaluate"),
+        experiment_config=experiment_setting.create_experiment_config(component_name),
         wait=True,
         logs=True,
     )

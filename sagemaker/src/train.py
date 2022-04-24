@@ -8,6 +8,7 @@ from sagemaker.debugger import (
 )
 from sagemaker.estimator import Estimator
 from sagemaker.inputs import TrainingInput
+from sagemaker.session import Session
 
 from utility import ExperimentSetting
 
@@ -15,7 +16,7 @@ from utility import ExperimentSetting
 @click.command()
 @click.option("--image-uri", type=str, envvar="IMAGE_URI")
 @click.option("--role", type=str, envvar="ROLE")
-@click.option("--experiment-name", type=str, default="mnist")
+@click.option("--experiment-name", type=str, envvar="SAGEMAKER_EXPERIMENT_NAME")
 @click.option("--component-name", type=str, default="train")
 @click.option("--trial-suffix", type=str, default=None)
 @click.option("--input-s3-uri", type=str, required=True)
@@ -50,11 +51,14 @@ def main(
     """Train model with MNIST dataset."""
     print("Started model training.")
 
+    session = Session()
+
     local_mode = instance_type == "local"
 
     if local_mode:
         experiment_config = None
 
+        # ローカルモードの場合 file:// でローカルディレクトリを指定
         inputs = {"train": input_s3_uri}
 
         rules = None
@@ -67,6 +71,7 @@ def main(
             "train": TrainingInput(s3_data=input_s3_uri, distribution="ShardedByS3Key")
         }
 
+        # 学習時に収集するプロファイリングを設定
         rules = [
             ProfilerRule.sagemaker(rule_configs.ProfilerReport()),
             ProfilerRule.sagemaker(rule_configs.BatchSize()),
@@ -82,25 +87,29 @@ def main(
             framework_profile_params=FrameworkProfile(start_step=2, num_steps=10)
         )
 
+    # 学習処理
     estimator = Estimator(
         image_uri=image_uri,
         role=role,
         output_path=output_s3_uri,
         instance_type=instance_type,
         instance_count=instance_count,
-        use_spot_instances=use_spot_instances,
-        checkpoint_s3_uri=checkpoint_s3_uri,
+        use_spot_instances=use_spot_instances,  # Trueでスポットインスタを利用
+        checkpoint_s3_uri=checkpoint_s3_uri,  # チェックポイントファイルをS3へ同期させる
+        # /opt/ml/input/config/hyperparameters.json にマッピング
         hyperparameters={
             "epochs": epochs,
             "batch_size": batch_size,
             "lr": lr,
         },
+        # ログからメトリクスを収集するためのフィルタを正規表現で記述
         metric_definitions=[
             {"Name": "test:loss", "Regex": "test_loss: ([0-9\\.]+)"},
             {"Name": "test:accuracy", "Regex": "test_accuracy: ([0-9\\.]+)"},
         ],
         rules=rules,
         profiler_config=profiler_config,
+        sagemaker_session=session,
     )
     estimator.fit(inputs, experiment_config=experiment_config, logs=True)
 

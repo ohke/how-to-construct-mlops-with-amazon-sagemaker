@@ -9,7 +9,9 @@ from sagemaker.session import Session
 @click.option("--image-uri", type=str, envvar="IMAGE_URI")
 @click.option("--model-s3-uri", type=str)
 @click.option("--evaluation-s3-uri", type=str)
-@click.option("--model-package-group-name", type=str, default="mnist")
+@click.option(
+    "--model-package-group-name", type=str, envvar="SAGEMAKER_MODEL_PACKAGE_GROUP_NAME"
+)
 def main(
     role: str,
     image_uri: str,
@@ -20,6 +22,7 @@ def main(
     """Register the model with its evaluation result."""
     session = Session()
 
+    # evaluateの結果をモデルと紐付ける
     model_metrics = ModelMetrics(
         model_statistics=MetricsSource(
             s3_uri=evaluation_s3_uri,
@@ -35,10 +38,10 @@ def main(
     )
 
     model.register(
-        content_types=["image/jpeg"],
-        response_types=["application/json"],
-        inference_instances=["ml.t2.medium"],
-        transform_instances=["ml.m5.large"],
+        content_types=["image/jpeg"],  # 推論時のリクエストのContent-Type
+        response_types=["application/json"],  # 推論時のレスポンスのContent-Type
+        inference_instances=["ml.t2.medium"],  # Endpointsのインスタンスタイプを限定
+        transform_instances=["ml.m5.large"],  # Batch Transformsのインスタンスタイプを限定
         model_package_group_name=model_package_group_name,
         model_metrics=model_metrics,
         image_uri=image_uri,

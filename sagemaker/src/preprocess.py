@@ -1,6 +1,7 @@
 from typing import Optional
 import click
 from sagemaker.processing import ProcessingOutput, Processor
+from sagemaker.session import Session
 
 from utility import ExperimentSetting
 
@@ -8,7 +9,7 @@ from utility import ExperimentSetting
 @click.command()
 @click.option("--image-uri", type=str, envvar="IMAGE_URI")
 @click.option("--role", type=str, envvar="ROLE")
-@click.option("--experiment-name", type=str, default="mnist")
+@click.option("--experiment-name", type=str, envvar="SAGEMAKER_EXPERIMENT_NAME")
 @click.option("--component-name", type=str, default="preprocess")
 @click.option("--trial-suffix", type=str, default=None)
 @click.option("--instance-type", type=str, default="ml.c5.xlarge")
@@ -25,6 +26,8 @@ def main(
     """Preprocess MNIST data."""
     print("Started MNIST data preprocessing.")
 
+    session = Session()
+
     setting = ExperimentSetting.new(experiment_name, trial_suffix)
 
     outputs = [
@@ -40,6 +43,7 @@ def main(
         role=role,
         instance_count=instance_count,
         instance_type=instance_type,
+        sagemaker_session=session,
     )
     processor.run(
         inputs=[],

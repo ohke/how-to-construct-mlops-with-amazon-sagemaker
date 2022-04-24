@@ -32,7 +32,9 @@ from sagemaker.workflow.steps import (
 @click.option("--pipeline-name", type=str)
 @click.option("--image-uri", type=str, envvar="IMAGE_URI")
 @click.option("--role", type=str, envvar="ROLE")
-@click.option("--model-package-group-name", type=str, default="mnist")
+@click.option(
+    "--model-package-group-name", type=str, envvar="SAGEMAKER_MODEL_PACKAGE_GROUP_NAME"
+)
 @click.option("--epochs", type=int, default=2)
 @click.option("--batch-size", type=int, default=64)
 @click.option("--lr", type=float, default=1.0)
@@ -239,6 +241,7 @@ def main(
                 ],
             ),
         ),
+        sagemaker_session=session,
     )
 
     assert json.loads(pipeline.definition())
