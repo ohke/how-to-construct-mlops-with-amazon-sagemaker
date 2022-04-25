@@ -1,12 +1,17 @@
-# amazon-sagemaker-mnist-pytorch-example
+# how-to-construct-mlops-with-amazon-sagemaker
 
-Amazon SageMaker の example コードレポジトリです。
+Amazon SageMaker で MLOps (前処理・学習・評価・推論、および、実験・モデル・ワークフローの管理) を実現するミニマムなコードサンプルです。
+
+<img src="./image/sagemaker_pipelines.jpg" width="320px">
+<img src="./image/sagemaker_experiments.jpg" width="320px">
+<img src="./image/sagemaker_model_registry.jpg" width="320px">
+<img src="./image/sagemaker_hyperparameter_tuning.jpg" width="320px">
 
 ## Features
 
-- ゼロからコンテナを作成しています (Bring Your Own Container: BYOC)
+- ゼロからコンテナイメージを作成してます (Bring Your Own Container: BYOC)
 - MNIST と PyTorch を用いており、画像処理タスクでの SageMaker の活用を概観できます
-- SageMaker で広く使われている (であろう) 以下の機能をカバーしています
+- SageMaker で広く使われている以下の機能をカバーしています
   - Processing Jobs (前処理・評価)
   - Training Jobs (学習)
   - Hyperparameter Tuning Jobs (ハイパパラメータチューニング)
@@ -20,7 +25,7 @@ Amazon SageMaker の example コードレポジトリです。
 
 ### Requirement
 
-使用する AWS リソースを作成してください。
+本レポジトリで使用する、以下の AWS リソースを作成してください。
 
 - S3 Bucket
   - 前処理・学習・評価などの結果ファイル (アーティファクト) の保持に使用
@@ -147,3 +152,9 @@ sagemaker
     ├── pipeline.py -> Pipelines
     └── utility.py -> Experiments
 ```
+
+## References
+
+- https://docs.aws.amazon.com/sagemaker/
+- https://github.com/aws/amazon-sagemaker-examples
+- [O'Reilly Japan - 実践 AWS データサイエンス](https://www.oreilly.co.jp/books/9784873119687/)
