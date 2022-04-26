@@ -39,7 +39,7 @@ Amazon SageMaker で MLOps (前処理・学習・評価・推論、および、�
 - (Option) SageMaker Studio
   - Pipelines や Experiments などを Web UI で参照できます
 
-開発環境には以下をインストールしてください。なお簡単化のため、コンテナの開発・デプロイと SageMaker への処理のリクエストは、同一の計算機から行う前提です。
+開発環境には以下をインストールしてください。
 
 - [Python 3.9](https://www.python.org/downloads/)
 - [Poetry](https://python-poetry.org/)
@@ -55,8 +55,8 @@ $ aws configure list
 ### Clone
 
 ```
-$ git clone https://github.com/ohke/amazon-sagemaker-mnist-example.git
-$ cd amazon-sagemaker-mnist-example
+$ git clone https://github.com/ohke/how-to-construct-mlops-with-amazon-sagemaker.git
+$ cd how-to-construct-mlops-with-amazon-sagemaker
 ```
 
 ### Edit environment variables
@@ -82,10 +82,10 @@ $ make build-and-push
 $ cd sagemaker
 
 $ env $(cat ../.env) poetry shell
-$ python src/hoge.py ...
+(.venv) $ python src/train.py ...
 
 # If you use direnv...
-$ poetry run src/hoge.py ...
+$ poetry run src/train.py ...
 ```
 
 ## Code structure
