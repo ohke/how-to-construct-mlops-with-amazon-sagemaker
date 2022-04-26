@@ -2,10 +2,9 @@
 
 Amazon SageMaker で MLOps (前処理・学習・評価・推論、および、実験・モデル・ワークフローの管理) を実現するミニマムなコードサンプルです。
 
-<img src="./image/sagemaker_pipelines.jpg" width="320px">
-<img src="./image/sagemaker_experiments.jpg" width="320px">
-<img src="./image/sagemaker_model_registry.jpg" width="320px">
-<img src="./image/sagemaker_hyperparameter_tuning.jpg" width="320px">
+<img src="./image/sagemaker_pipelines.jpg" width="360px"><img src="./image/sagemaker_experiments.jpg" width="360px">
+
+<img src="./image/sagemaker_model_registry.jpg" width="360px"><img src="./image/sagemaker_hyperparameter_tuning.jpg" width="360px">
 
 ## Features
 
